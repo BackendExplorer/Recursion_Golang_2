@@ -1,0 +1,101 @@
+openapi: 3.0.0
+info:
+  title: ポケモンAPI
+  description: ポケモンの情報を取得するためのAPI
+  version: 1.0.0
+
+paths:
+  /pokemon:
+    get:
+      summary: ポケモン一覧の取得
+      description: 利用可能なポケモンの一覧を取得します
+      parameters:
+        - name: limit
+          in: query
+          description: 取得するポケモンの最大数
+          required: false
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          description: 取得開始位置
+          required: false
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: 正常にポケモン一覧を取得
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    description: 総ポケモン数
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          description: ポケモンID
+                        name:
+                          type: string
+                          description: ポケモンの名前
+                        types:
+                          type: array
+                          items:
+                            type: string
+                          description: ポケモンのタイプ
+  
+  /pokemon/{id}:
+    get:
+      summary: 特定のポケモン情報の取得
+      description: 指定されたIDのポケモン詳細情報を取得します
+      parameters:
+        - name: id
+          in: path
+          description: ポケモンのID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 正常にポケモン情報を取得
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    description: ポケモンID
+                  name:
+                    type: string
+                    description: ポケモンの名前
+                  types:
+                    type: array
+                    items:
+                      type: string
+                    description: ポケモンのタイプ
+                  stats:
+                    type: object
+                    properties:
+                      hp:
+                        type: integer
+                      attack:
+                        type: integer
+                      defense:
+                        type: integer
+                      special_attack:
+                        type: integer
+                      special_defense:
+                        type: integer
+                      speed:
+                        type: integer
+        '404':
+          description: 指定されたIDのポケモンが見つかりません
