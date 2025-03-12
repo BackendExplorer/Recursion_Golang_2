@@ -4,36 +4,28 @@ import {
   Typography, 
   Box, 
   CircularProgress, 
-  Card, 
-  CardContent,
-  Grid,
+  Grid as Unstable_Grid2,
   AppBar,
   Toolbar,
+  Pagination,
 } from '@mui/material'
-
-
-// 投稿データの型定義を追加
-interface Post {
-  id: number;
-  title: string;
-  body: string;
-}
-
-// データフェッチ関数の戻り値の型を指定
-const fetchPosts = async (): Promise<Post[]> => {
-  const response = await fetch('https://jsonplaceholder.typicode.com/posts')
-  if (!response.ok) {
-    throw new Error('ネットワークエラーが発生しました')
-  }
-  return response.json()
-}
+import React from 'react'
+import { PokemonCard } from './components/PokemonCard'
+import { fetchPokemonList } from './api/pokemon'
+import { PokemonListResponse } from './types/pokemon'
 
 function App() {
-  // useQueryの型パラメータを指定
-  const { data, isLoading, error } = useQuery<Post[], Error>({
-    queryKey: ['posts'],
-    queryFn: fetchPosts,
+  const [page, setPage] = React.useState(1)
+  const itemsPerPage = 20
+
+  const { data, isLoading, error } = useQuery<PokemonListResponse, Error>({
+    queryKey: ['pokemon', page],
+    queryFn: () => fetchPokemonList(page),
   })
+
+  const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
+    setPage(value)
+  }
 
   return (
     <>
@@ -57,22 +49,25 @@ function App() {
         ) : error ? (
           <Typography color="error">エラー: {error.message}</Typography>
         ) : (
-          <Grid container spacing={3}>
-            {data?.slice(0, 10).map((post: Post) => (
-              <Grid item xs={12} sm={6} md={4} key={post.id}>
-                <Card>
-                  <CardContent>
-                    <Typography variant="h6" component="h2">
-                      {post.title}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {post.body}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
+          <Unstable_Grid2 container spacing={2}>
+            {data?.results.map((pokemon) => (
+              <Unstable_Grid2 xs={5} sm={3} key={pokemon.name}>
+                <PokemonCard pokemon={pokemon} />
+              </Unstable_Grid2>
             ))}
-          </Grid>
+          </Unstable_Grid2>
+        )}
+        
+        {!isLoading && !error && data && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4, mb: 4 }}>
+            <Pagination 
+              count={Math.ceil((data.count || 0) / itemsPerPage)}
+              page={page}
+              onChange={handlePageChange}
+              color="primary"
+              size="large"
+            />
+          </Box>
         )}
       </Container>
     </>
