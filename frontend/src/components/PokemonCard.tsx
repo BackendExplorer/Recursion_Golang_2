@@ -11,6 +11,9 @@ export const PokemonCard = ({ pokemon }: Props) => {
   return (
     <Card>
       <CardContent>
+        <Typography>
+          No.{id}
+        </Typography>
         <Typography variant="h6" component="h2" sx={{ textTransform: 'capitalize' }}>
           {pokemon.japanese_name || pokemon.name}
         </Typography>
