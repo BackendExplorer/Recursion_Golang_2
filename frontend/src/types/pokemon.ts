@@ -1,10 +1,10 @@
 export interface Pokemon {
+  id: number
   name: string
-  url: string
-  japanese_name?: string
+  image: string
 }
 
 export interface PokemonListResponse {
-  results: Pokemon[]
   count: number
+  results: Pokemon[]
 } 

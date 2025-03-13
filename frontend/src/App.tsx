@@ -1,27 +1,22 @@
-import { useQuery } from '@tanstack/react-query'
 import { 
   Container, 
   Typography, 
   Box, 
   CircularProgress, 
-  Grid as Unstable_Grid2,
+  Grid,
   AppBar,
   Toolbar,
   Pagination,
 } from '@mui/material'
 import React from 'react'
 import { PokemonCard } from './components/PokemonCard'
-import { fetchPokemonList } from './api/pokemon'
-import { PokemonListResponse } from './types/pokemon'
+import { usePokemonList } from './api/pokemon'
 
 function App() {
   const [page, setPage] = React.useState(1)
   const itemsPerPage = 20
 
-  const { data, isLoading, error } = useQuery<PokemonListResponse, Error>({
-    queryKey: ['pokemon', page],
-    queryFn: () => fetchPokemonList(page),
-  })
+  const { data, isLoading, error } = usePokemonList()
 
   const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
     setPage(value)
@@ -49,13 +44,13 @@ function App() {
         ) : error ? (
           <Typography color="error">エラー: {error.message}</Typography>
         ) : (
-          <Unstable_Grid2 container spacing={2}>
+          <Grid container spacing={2}>
             {data?.results.map((pokemon) => (
-              <Unstable_Grid2 xs={5} sm={3} key={pokemon.name}>
+              <Grid item xs={5} sm={3} key={pokemon.name}>
                 <PokemonCard pokemon={pokemon} />
-              </Unstable_Grid2>
+              </Grid>
             ))}
-          </Unstable_Grid2>
+          </Grid>
         )}
         
         {!isLoading && !error && data && (
