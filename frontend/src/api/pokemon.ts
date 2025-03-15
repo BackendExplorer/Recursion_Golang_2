@@ -1,32 +1,35 @@
-import { PokemonListResponse, Pokemon } from '../types/pokemon'
+import { PokemonListResponse } from '../types/pokemon'
+import { useQuery } from '@tanstack/react-query'
 
-export const fetchPokemonList = async (page: number): Promise<PokemonListResponse> => {
-  const offset = (page - 1) * 20
-  const response = await fetch(`https://pokeapi.co/api/v2/pokemon-species?offset=${offset}&limit=20`)
-  
-  if (!response.ok) {
-    throw new Error('ネットワークエラーが発生しました')
-  }
-  
-  const data = await response.json()
-  const pokemonWithJapaneseNames = await Promise.all(
-    data.results.map(async (pokemon: Pokemon) => {
-      const speciesResponse = await fetch(pokemon.url)
-      const speciesData = await speciesResponse.json()
-      
-      const japaneseName = speciesData.names.find(
-        (name: any) => name.language.name === 'ja'
-      )?.name || pokemon.name
-      
-      return {
-        ...pokemon,
-        japanese_name: japaneseName
-      }
+export const fetchPokemonList = async (): Promise<PokemonListResponse> => {
+  try {
+    const response = await fetch(`http://localhost:8080/pokemons`, {
+      headers: {
+        'Accept': 'application/json',
+      },
+      signal: AbortSignal.timeout(10000),
     })
-  )
-  
-  return {
-    ...data,
-    results: pokemonWithJapaneseNames
+    
+    if (!response.ok) {
+      throw new Error(`ネットワークエラーが発生しました: ${response.status} ${response.statusText}`)
+    }
+    
+    const pokemons = await response.json()
+    return {
+      count: pokemons.length,
+      results: pokemons
+    }
+  } catch (error) {
+    if (error instanceof TypeError && error.message === 'Failed to fetch') {
+      throw new Error('サーバーに接続できませんでした。サーバーが起動しているか確認してください。')
+    }
+    throw error
   }
+}
+
+export const usePokemonList = () => {
+  return useQuery({
+    queryKey: ['pokemons'],
+    queryFn: fetchPokemonList,
+  })
 } 
