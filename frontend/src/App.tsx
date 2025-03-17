@@ -10,16 +10,17 @@ import {
 } from '@mui/material'
 import React from 'react'
 import { PokemonCard } from './components/PokemonCard'
-import { usePokemonList } from './api/pokemon'
+import { usePokemonList } from './api/pokemons-pagination'
 
 function App() {
   const [page, setPage] = React.useState(1)
   const itemsPerPage = 20
 
-  const { data, isLoading, error } = usePokemonList()
+  const { data, isLoading, error } = usePokemonList(page, itemsPerPage)
 
   const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
     setPage(value)
+    window.scrollTo(0, 0)
   }
 
   return (

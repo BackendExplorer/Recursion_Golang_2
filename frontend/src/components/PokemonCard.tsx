@@ -7,19 +7,28 @@ interface Props {
 
 export const PokemonCard = ({ pokemon }: Props) => {
   return (
-    <Card>
+    <Card sx={{ width: 200, height: 280 }}>
       <CardContent>
         <Typography>
           No.{pokemon.id}
         </Typography>
-        <Typography variant="h6" component="h2" sx={{ textTransform: 'capitalize' }}>
+        <Typography 
+          variant="h6" 
+          component="h2" 
+          sx={{ 
+            textTransform: 'capitalize',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap'
+          }}
+        >
           {pokemon.name}
         </Typography>
         <Box sx={{ textAlign: 'center', mt: 2 }}>
           <img 
             src={pokemon.image}
             alt={pokemon.name}
-            style={{ width: '80%', height: 'auto' }}
+            style={{ width: '120px', height: '120px', objectFit: 'contain' }}
           />
         </Box>
       </CardContent>
