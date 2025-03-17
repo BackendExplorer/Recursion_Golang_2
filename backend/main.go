@@ -12,19 +12,17 @@ import (
 func main() {
 	r := mux.NewRouter()
 
-	// 単体ポケモン取得エンドポイント
+	// エンドポイント
 	r.HandleFunc("/pokemon/{id}", getPokemonHandler).Methods("GET")
-	// 全ポケモン取得エンドポイント
 	r.HandleFunc("/pokemons", getPokemonsHandler).Methods("GET")
 
-	// CORSミドルウェアの設定
+	// CORS設定
 	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"http://localhost:5173"}, // フロントエンドのオリジン
+		AllowedOrigins: []string{"http://localhost:5173"},
 		AllowedMethods: []string{"GET"},
 		AllowedHeaders: []string{"Accept", "Content-Type", "Content-Length", "Accept-Encoding", "Authorization"},
 	})
 
-	// CORSミドルウェアを適用したハンドラを作成
 	handler := c.Handler(r)
 
 	fmt.Println("サーバー起動: http://localhost:8080")
