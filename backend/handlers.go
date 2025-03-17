@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 )
@@ -40,10 +41,27 @@ func getPokemonHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// 全ポケモン取得処理（page / limit を削除）
+// 全ポケモン取得処理（ページネーション対応）
 func getPokemonsHandler(w http.ResponseWriter, r *http.Request) {
-	// ここでは例として20件を固定で取得する
-	url := fmt.Sprintf("%s/pokemon?limit=20", pokeAPIBaseURL)
+	// クエリパラメータからページとリミットを取得
+	page := r.URL.Query().Get("page")
+	if page == "" {
+		page = "1"
+	}
+
+	limit := r.URL.Query().Get("limit")
+	if limit == "" {
+		limit = "20"
+	}
+
+	// offsetを計算（ページ - 1）* リミット
+	offset := 0
+	if pageNum, err := strconv.Atoi(page); err == nil && pageNum > 1 {
+		limitNum, _ := strconv.Atoi(limit)
+		offset = (pageNum - 1) * limitNum
+	}
+
+	url := fmt.Sprintf("%s/pokemon?offset=%d&limit=%s", pokeAPIBaseURL, offset, limit)
 
 	res, err := http.Get(url)
 	if err != nil {
@@ -65,12 +83,14 @@ func getPokemonsHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			continue
 		}
-		defer pokemonRes.Body.Close()
 
+		// 即座にCloseするように修正
 		var pokeResp PokemonResponse
 		if err := json.NewDecoder(pokemonRes.Body).Decode(&pokeResp); err != nil {
+			pokemonRes.Body.Close()
 			continue
 		}
+		pokemonRes.Body.Close()
 
 		pokemons = append(pokemons, Pokemon{
 			ID:    pokeResp.ID,
@@ -79,11 +99,17 @@ func getPokemonsHandler(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	// page / limit のフィールドは削除し、ポケモン配列のみ返す
+	// ページネーション情報を含めたレスポンスを返す
 	if err := json.NewEncoder(w).Encode(struct {
 		Pokemon []Pokemon `json:"pokemon"`
+		Total   int       `json:"total"`
+		Page    string    `json:"page"`
+		Limit   string    `json:"limit"`
 	}{
 		Pokemon: pokemons,
+		Total:   listResp.Count,
+		Page:    page,
+		Limit:   limit,
 	}); err != nil {
 		http.Error(w, "JSONエンコードエラー", http.StatusInternalServerError)
 		return
