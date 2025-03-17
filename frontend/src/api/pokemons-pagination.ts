@@ -1,9 +1,9 @@
 import { PokemonListResponse } from '../types/pokemon'
 import { useQuery } from '@tanstack/react-query'
 
-export const fetchPokemonList = async (): Promise<PokemonListResponse> => {
+export const fetchPokemonList = async (page: number = 1, limit: number = 20): Promise<PokemonListResponse> => {
   try {
-    const response = await fetch(`http://localhost:8080/pokemons`, {
+    const response = await fetch(`http://localhost:8080/pokemons?page=${page}&limit=${limit}`, {
       headers: {
         'Accept': 'application/json',
       },
@@ -14,10 +14,10 @@ export const fetchPokemonList = async (): Promise<PokemonListResponse> => {
       throw new Error(`ネットワークエラーが発生しました: ${response.status} ${response.statusText}`)
     }
     
-    const pokemons = await response.json()
+    const data = await response.json()
     return {
-      count: pokemons.length,
-      results: pokemons
+      count: data.total,
+      results: data.pokemon
     }
   } catch (error) {
     if (error instanceof TypeError && error.message === 'Failed to fetch') {
@@ -27,9 +27,9 @@ export const fetchPokemonList = async (): Promise<PokemonListResponse> => {
   }
 }
 
-export const usePokemonList = () => {
+export const usePokemonList = (page: number = 1, limit: number = 20) => {
   return useQuery({
-    queryKey: ['pokemons'],
-    queryFn: fetchPokemonList,
+    queryKey: ['pokemons', page, limit],
+    queryFn: () => fetchPokemonList(page, limit),
   })
 } 
