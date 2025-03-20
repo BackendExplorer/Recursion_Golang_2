@@ -13,6 +13,7 @@ func main() {
 	r := mux.NewRouter()
 
 	// エンドポイント
+	//pokemon/{id}というパスを持つURLが入力された時だけ、getPokemonHandlerという関数を呼び出すということを明示しているのか？
 	r.HandleFunc("/pokemon/{id}", getPokemonHandler).Methods("GET")
 	r.HandleFunc("/pokemons", getPokemonsHandler).Methods("GET")
 

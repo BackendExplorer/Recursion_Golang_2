@@ -11,6 +11,7 @@ import (
 const pokeAPIBaseURL = "https://pokeapi.co/api/v2"
 
 // 単体ポケモン取得処理
+// ブラウザからの要求を受け取り、ブラウザに要求されたものを返す
 func getPokemonHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
@@ -28,13 +29,43 @@ func getPokemonHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pokemon := Pokemon{
-		ID:    pokeResp.ID,
-		Name:  pokeResp.Name,
-		Image: pokeResp.Sprites.FrontDefault,
+	pokemonDetail := PokemonDetail{
+		ID:        pokeResp.ID,
+		Name:      pokeResp.Name,
+		Image:     pokeResp.Sprites.FrontDefault,
+		Height:    pokeResp.Height,
+		Weight:    pokeResp.Weight,
+		Types:     make([]string, len(pokeResp.Types)),
+		Abilities: make([]string, len(pokeResp.Abilities)),
+		Stats:     Stats{},
 	}
 
-	if err := json.NewEncoder(w).Encode(pokemon); err != nil {
+	for i, t := range pokeResp.Types {
+		pokemonDetail.Types[i] = t.Type.Name
+	}
+
+	for i, a := range pokeResp.Abilities {
+		pokemonDetail.Abilities[i] = a.Ability.Name
+	}
+
+	for _, s := range pokeResp.Stats {
+		switch s.Stat.Name {
+		case "hp":
+			pokemonDetail.Stats.HP = s.BaseStat
+		case "attack":
+			pokemonDetail.Stats.Attack = s.BaseStat
+		case "defense":
+			pokemonDetail.Stats.Defense = s.BaseStat
+		case "special-attack":
+			pokemonDetail.Stats.SpecialAttack = s.BaseStat
+		case "special-defense":
+			pokemonDetail.Stats.SpecialDefense = s.BaseStat
+		case "speed":
+			pokemonDetail.Stats.Speed = s.BaseStat
+		}
+	}
+
+	if err := json.NewEncoder(w).Encode(pokemonDetail); err != nil {
 		http.Error(w, "JSONエンコードエラー", http.StatusInternalServerError)
 		return
 	}
