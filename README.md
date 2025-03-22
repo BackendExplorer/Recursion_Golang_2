@@ -33,4 +33,5 @@
 
 ## 📑参考文献
 ### 公式ドキュメント
-- [Go](https://go.dev/doc/)
+- [Go言語公式ドキュメント](https://go.dev/doc/)
+- [Goパッケージリファレンス](https://go.dev/doc/)
